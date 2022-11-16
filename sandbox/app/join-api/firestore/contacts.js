@@ -43,8 +43,11 @@ export const getContactById = async (contactId) => {
  * @param {string} condition - compare sign that proves @filed and @value
  * @param {any} value - value to query collection
  */
-window.getContactsWhere = async (field, condition, value) => {
-    const q = query(collection(firestore, "contacts"), where(field, condition, value));
+export const getContactsWhere = async (field, condition, value) => {
+
+    const queryConstraint = createWereQueryConstraint(field, condition, value);
+    const collectionRef = getCollection("contacts");
+    const q = query(collectionRef, queryConstraint);
 
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {

@@ -38,8 +38,11 @@ export async function getCollectionList(collectionName) {
      * @type {Promise<QuerySnapshot<T>>}
      */
     const collectionSnapshot = await getDocs(collection);
-    const collectionList = collectionSnapshot.docs.map(doc => doc.data());
+    return getCollectionListFromSnapshot(collectionSnapshot);
+}
 
+function getCollectionListFromSnapshot(collectionSnapshot) {
+    const collectionList = collectionSnapshot.docs.map((docSnap) => getMapIdToDataFromSnapshot(docSnap));
     return collectionList;
 }
 
@@ -62,10 +65,28 @@ export async function addNewDoc(collectionRef, newDoc) {
     return await addDoc(collectionRef, newDoc);
 }
 
+/**
+ *
+ * @param {string} collectionName
+ * @param {string} documentId
+ * @returns {T} Document from Firestore Collection
+ */
 export async function getDocumentById(collectionName, documentId) {
     const docRef = getDocRef(collectionName, documentId)
     const docSnap = await getDocSnapshot(docRef);
-    const docData = getDataFromSnapshot(docSnap);
+    const document = getMapIdToDataFromSnapshot(docSnap);
+    return document;
+
+}
+
+/**
+ *  Appends Id to Document
+ * @param {DocumentSnapshot<T>} documentSnapshot
+ * @returns {T}
+ */
+function getMapIdToDataFromSnapshot(documentSnapshot) {
+    const docData = getDataFromSnapshot(documentSnapshot);
+    docData.id = getIdFromSnapshot(documentSnapshot);
     return docData;
 }
 
@@ -105,34 +126,27 @@ async function getDataFromSnapshot(documentSnapshot) {
 }
 
 /**
- * Get multiple documents from a collection
- * @param {string} field - Should be a field name present in contact object
- * @param {string} condition - compare sign that proves @filed and @value
- * @param {any} value - value to query collection
+ *
+ * @param {DocumentSnapshot<T>} documentSnapshot
+ * @returns {string}
  */
-window.getContactsWhere = async (field, condition, value) => {
-    const q = query(collection(firestore, "contacts"), where(field, condition, value));
-
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
-        // doc.data() is never undefined for query doc snapshots
-        console.log(doc.id, " => ", doc.data());
-    });
-
-    return
+async function getIdFromSnapshot(documentSnapshot) {
+    if (documentSnapshot.exists()) {
+        return documentSnapshot.id;
+    } else {
+        // doc.data() will be undefined in this case
+        return undefined;
+    }
 }
 
 /**
  *
- * @param {string} fieldToOrderBy
- * @param {number} limit
+ * @param {string | FieldPath} fieldPath
+ * @param {WhereFilterOp} opStr
+ * @param {unknown} value
+ * @param {Function} queryFn any firestore query function
+ * @returns {QueryConstraint}
  */
-window.getContactsOrderBy = async (fieldToOrderBy, orderDirection, limit) => {
-    const q = query(collection(firestore, "contacts"), orderBy(fieldToOrderBy, orderDirection), limit(limit));
-
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
-        // doc.data() is never undefined for query doc snapshots
-        console.log(doc.id, " => ", doc.data());
-    });
+export function createWereQueryConstraint(fieldPath, opStr, value) {
+    return where(fieldPath, opStr, value);
 }
