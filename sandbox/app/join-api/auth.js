@@ -1,4 +1,4 @@
-import { app } from "../core.js";
+import { app } from "./core.js";
 
 import {
     getAuth, // https://firebase.google.com/docs/reference/js/auth.md#getauth
@@ -8,6 +8,18 @@ import {
     createUserWithEmailAndPassword, // https://firebase.google.com/docs/reference/js/auth.md#createuserwithemailandpassword
     onAuthStateChanged, // https://firebase.google.com/docs/reference/js/auth.md#onauthstatechanged
     sendPasswordResetEmail, // https://firebase.google.com/docs/reference/js/auth.md#sendpasswordresetemail
+    signInAnonymously, // https://firebase.google.com/docs/reference/js/auth.md#signinanonymously
+    signInWithEmailAndPassword, // https://firebase.google.com/docs/reference/js/auth.md#signinwithemailandpassword
+    signOut, // https://firebase.google.com/docs/reference/js/auth.md#signout
+    updateCurrentUser, // https://firebase.google.com/docs/reference/js/auth.md#updatecurrentuser
+    verifyPasswordResetCode, // https://firebase.google.com/docs/reference/js/auth.md#verifypasswordresetcode
+    deleteUser, // https://firebase.google.com/docs/reference/js/auth.md#deleteuser
+    reload, // https://firebase.google.com/docs/reference/js/auth.md#reload
+    updateEmail, // https://firebase.google.com/docs/reference/js/auth.md#updateemail
+    updatePassword, // https://firebase.google.com/docs/reference/js/auth.md#updatepassword
+    updatePhoneNumber, // https://firebase.google.com/docs/reference/js/auth.md#updatephonenumber
+    updateProfile, // https://firebase.google.com/docs/reference/js/auth.md#updateprofile
+    getAdditionalUserInfo, // https://firebase.google.com/docs/reference/js/auth.md#getadditionaluserinfo
 } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-auth.js";
 
 /**
@@ -17,41 +29,29 @@ import {
 const AUTH_PERSISTENCE = 'SESSION';
 
 /**
- * @reference https://firebase.google.com/docs/reference/js/auth.auth.md#auth_interface
+ * @references { https://firebase.google.com/docs/reference/js/auth.auth.md#auth_interface | https://firebase.google.com/docs/reference/js/auth }
  * @type {Auth}
  */
 const auth = getAuth(app);
 
-auth.setPersistence(AUTH_PERSISTENCE);
-
 /**
- * @reference https://firebase.google.com/docs/reference/js/auth.auth.md#authonauthstatechanged
- * @type {Unsubscribe}
+ *
+ * @param {string} email
+ * @param {string} password
+ * @returns {Promise<UserCredential>}
  */
-const unsubscribe = auth.onAuthStateChanged(handleAuthStateChange);
+export async function createAccount(email, password){
+    const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
+    return userCredentials;
+}
 
 /**
  *
- * @param {nextOrObserver: NextOrObserver<User | null>} newAuthState
+ * @param {string} email
+ * @param {string} password
+ * @returns {Promise<UserCredential>}
  */
-function handleAuthStateChange(newAuthState) {
-    console.log(newAuthState);
-}
-
-/**
- * @reference https://firebase.google.com/docs/reference/js/auth.auth.md#authsignout
- * @returns {Promise<void>}
- */
-export function signOut() {
-    return auth.signOut();
-}
-
-
-/**
- * @reference https://firebase.google.com/docs/reference/js/auth.auth.md#authupdatecurrentuser
- * @param {User | null} user
- * @returns {Promise<void>}
- */
-export function updateCurrentUser(user) {
-    return auth.updateCurrentUser();
+export async function logInWithEmailAndPassword(email, password){
+   const userCredentials = await signInWithEmailAndPassword(auth, email, password);
+   return userCredentials;
 }
